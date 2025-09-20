@@ -86,5 +86,11 @@ if rpm -q vsftpd >/dev/null 2>&1; then
   systemctl restart vsftpd
 fi
 
+echo "[*] automated updates"
+yum -y install yum-cron
+sed -i 's/^apply_updates = .*/apply_updates = yes/' /etc/yum/yum-cron.conf
+systemctl enable --now yum-cron
+
+
 echo "[*] Root SSH password login remains disabled; ensure you have a key before running this."
 echo "[*] Done."
