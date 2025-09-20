@@ -113,7 +113,7 @@ if dpkg -s vsftpd >/dev/null 2>&1; then
   systemctl restart vsftpd
 fi
 
-echo "[*] unattended security upgrades
+echo "[*] unattended security upgrades"
 apt-get install -y unattended-upgrades
 dpkg-reconfigure -f noninteractive unattended-upgrades
 
