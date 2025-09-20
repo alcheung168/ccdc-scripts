@@ -17,7 +17,7 @@ sed -ri 's/^(password\s+requisite\s+pam_pwquality\.so).*$/\1 retry=3 minlen=14 d
 
 echo "[*] Harden SSH"
 cp -a /etc/ssh/sshd_config /etc/ssh/sshd_config.bak.$(date +%s)
-cp "$(dirname "$0")/sshd_config" /etc/ssh/sshd_config
+cp "$(dirname "$0")/config/sshd_config" /etc/ssh/sshd_config
 chmod 600 /etc/ssh/sshd_config
 systemctl restart ssh
 
