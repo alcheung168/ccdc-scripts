@@ -22,4 +22,26 @@ foreach ($rule in @("RemoteDesktop-UserMode-In-TCP","File and Printer Sharing (S
 # Enable advanced auditing categories if not domain-controlled
 auditpol /set /category:* /success:enable /failure:enable | Out-Null
 
+# --- Extra hardening toggles ---
+
+# 1) Disable Print Spooler if this is NOT a print server (mitigates PrintNightmare-class issues)
+Set-Service -Name Spooler -StartupType Disabled
+Stop-Service Spooler -ErrorAction SilentlyContinue
+
+# 2) LSA protection / block credential theft (RunAsPPL + no WDigest)
+reg add HKLM\SYSTEM\CurrentControlSet\Control\Lsa /v RunAsPPL /t REG_DWORD /d 1 /f >$null
+reg add HKLM\SYSTEM\CurrentControlSet\Control\SecurityProviders\WDigest /v UseLogonCredential /t REG_DWORD /d 0 /f >$null
+
+# 3) Disable WebClient (WebDAV) unless required (helps against some NTLM relay paths)
+Set-Service WebClient -StartupType Disabled -ErrorAction SilentlyContinue
+Stop-Service WebClient -ErrorAction SilentlyContinue
+
+# 4) Require SMB server signing too (already in 2019 INF; enforce for 2016 here)
+Set-SmbServerConfiguration -RequireSecuritySignature $true -Force | Out-Null
+
+# 5) Disable Guest & default shares (optional; confirm app needs)
+wmic useraccount where "name='Guest'" set disabled=true | Out-Null
+reg add "HKLM\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters" /v AutoShareWks /t REG_DWORD /d 0 /f >$null
+
+
 Write-Host "[*] Service hardening complete."
